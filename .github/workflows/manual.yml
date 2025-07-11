@@ -31,17 +31,24 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Build and run tests
-        run: mvn clean install --no-transfer-progress
+      # 🛠️ Step 1: Compile and Build Only (No Tests)
+      - name: Build the project (no tests)
+        run: mvn clean package -DskipTests --no-transfer-progress
 
+      # 🧪 Step 2: Run Tests Separately
+      - name: Run tests
+        run: mvn test --no-transfer-progress
+
+      # 📁 Step 3: Archive Test Reports
       - name: Archive test reports
-        if: always()  # Always try to archive even if tests fail
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-reports
           path: target/surefire-reports/
 
-      - name: Archive JAR artifacts
+      # 📦 Step 4: Archive JAR artifacts
+      - name: Archive JAR Artifacts
         if: success()
         uses: actions/upload-artifact@v4
         with:
