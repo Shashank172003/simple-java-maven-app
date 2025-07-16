@@ -1,7 +1,7 @@
 # ---------- Stage 1: Build with Maven 3.9.9 ----------
 FROM eclipse-temurin:21-jdk AS build
 
-ENV MAVEN_VERSION=3.9.9
+ENV MAVEN_VERSION=3.9.6
 ENV MAVEN_HOME=/opt/maven
 
 RUN apt-get update && apt-get install -y curl unzip tar \
