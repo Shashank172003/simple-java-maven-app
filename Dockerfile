@@ -1,26 +1,31 @@
-# Stage 1: Build the application using Maven
-FROM maven:3.9.6-eclipse-temurin-21 AS build
+# ---------- Stage 1: Build with Maven 3.9.9 ----------
+FROM eclipse-temurin:21-jdk AS build
+
+ENV MAVEN_VERSION=3.9.9
+ENV MAVEN_HOME=/opt/maven
+
+RUN apt-get update && apt-get install -y curl unzip tar \
+  && curl -fsSL https://downloads.apache.org/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz | tar -xz -C /opt \
+  && ln -s /opt/apache-maven-${MAVEN_VERSION} /opt/maven \
+  && ln -s /opt/maven/bin/mvn /usr/bin/mvn
+
+ENV PATH="${MAVEN_HOME}/bin:${PATH}"
 
 WORKDIR /app
 
-# Copy pom.xml and download dependencies
 COPY pom.xml .
 RUN mvn dependency:go-offline
 
-# Copy the rest of the source code and build the project
 COPY src ./src
 RUN mvn clean package -DskipTests
 
-# Stage 2: Run the application with a slim JDK runtime
+# ---------- Stage 2: Run ----------
 FROM eclipse-temurin:21-jdk-alpine
 
 WORKDIR /app
 
-# Copy the jar file from the build stage
 COPY --from=build /app/target/*.jar app.jar
 
-# Expose port (change according to your app)
 EXPOSE 8080
 
-# Start the application
 ENTRYPOINT ["java", "-jar", "app.jar"]
